@@ -5,10 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 
 @Entity
 @Table(name = "\"user\"")
@@ -34,8 +31,10 @@ public class User {
         @Column(name = "userName", nullable = false, columnDefinition = "TEXT", unique = true)
         private String userName;
         @NotNull
+        @NotBlank
+        @Size(min = 8, message = "Password must be at least 8 characters long")
+        @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$", message = "Password must contain at least one lowercase letter, one uppercase letter, and one digit")
         private String password;
         @NotNull
         private boolean status = true;
-
 }

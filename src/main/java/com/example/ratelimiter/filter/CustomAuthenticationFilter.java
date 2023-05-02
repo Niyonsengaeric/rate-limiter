@@ -61,9 +61,6 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 						user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
 				.sign(algorithm);
 
-		String refresh_token = JWT.create().withSubject(user.getUsername())
-				.withExpiresAt(new Date(System.currentTimeMillis() - 30 * 24 * 60 * 60 * 1000))
-				.withIssuer(request.getRequestURL().toString()).sign(algorithm);
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
 		Map<String, String> data = new HashMap<>();
