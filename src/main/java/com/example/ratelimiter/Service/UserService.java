@@ -1,7 +1,8 @@
 package com.example.ratelimiter.Service;
 
-import com.example.ratelimiter.Model.User;
 import org.springframework.stereotype.Service;
+
+import com.example.ratelimiter.Model.User;
 
 @Service
 public interface UserService {
@@ -9,5 +10,5 @@ public interface UserService {
 
 	boolean existsByUserNameOrEmail(String userName, String email);
 
-	User findUser(String user);
+	User findUserName(String user);
 }
