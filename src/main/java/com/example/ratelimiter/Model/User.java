@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -23,7 +24,7 @@ public class User {
             name = "id",
             updatable = false
     )
-    private Long id;
+    private Integer id;
     @Size(min = 3, message = "names should have more than three characters")
     @Column(
             name = "names",
@@ -32,14 +33,24 @@ public class User {
 
     )
     private String names;
-    @Column(unique = true)
     @NotNull
     @Email
-    private String email;
     @Column(
-            name = "password",
+            name = "email",
             nullable = false,
-            columnDefinition = "TEXT"
+            columnDefinition = "TEXT",
+            unique = true
     )
+    private String email;
+    @NotBlank
+    @Size(min = 3, message = "names should have more than three characters")
+    @Column(
+            name = "userName",
+            nullable = false,
+            columnDefinition = "TEXT",
+            unique = true
+    )
+    private String userName;
+    @NotNull
     private String password;
 }
