@@ -56,7 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter(
 				authenticationManagerBean());
 		customAuthenticationFilter.setFilterProcessesUrl("/api/v1/auth/login");
-		http.authorizeRequests().antMatchers("/api/v1/auth/**")
+		http.authorizeRequests().antMatchers("/", "/api/v1/auth/**")
 				.permitAll();
 		http.authorizeRequests().anyRequest().authenticated();
 		http.addFilter(customAuthenticationFilter);
