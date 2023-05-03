@@ -1,46 +1,71 @@
 package com.example.ratelimiter.Controller;
 
-import com.example.ratelimiter.Exceptions.NotFoundException;
 import com.example.ratelimiter.Model.User;
 import com.example.ratelimiter.Model.UserSubscription;
 import com.example.ratelimiter.Service.UserService;
 import com.example.ratelimiter.Service.UserSubscriptionService;
 import com.example.ratelimiter.filter.CustomAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/v1")
 public class NotificationController {
-    @Autowired
-    UserSubscriptionService userSubscriptionService;
+    private static final String REDIS_KEY_PREFIX = "rate_limit:";
+
+    @Value("${default.time.capacity:5}")
+    private int defaultTimeCapacity;
 
     @Autowired
-    UserService userService;
+    private UserSubscriptionService userSubscriptionService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
     @PostMapping("/notification")
-    public String sendNotification(HttpServletRequest request) {
+    public ResponseEntity<Map<String, String>> sendNotification(HttpServletRequest request) {
         String userName = request.getAttribute(CustomAuthorizationFilter.userName).toString();
-        User getUser = userService.findUserName(userName);
+        String redisKey = REDIS_KEY_PREFIX + userName;
 
-        Integer timeCapacity;
-        Integer monthCapacity = 100;
-
-        if (getUser == null)
-            throw new NotFoundException("user not found");
-
-        UserSubscription subscription = userSubscriptionService.findUserSubscription(getUser);
-        if(subscription != null){
-            timeCapacity = subscription.getCapacity();
-        }else{
-            timeCapacity = 10;
+        String timeCapacity = redisTemplate.opsForValue().get(redisKey);
+        if (timeCapacity == null) {
+            User user = userService.findUserName(userName);
+            UserSubscription subscription = userSubscriptionService.findUserSubscription(user);
+            timeCapacity = subscription != null ? String.valueOf(subscription.getCapacity()) : String.valueOf(defaultTimeCapacity);
+            redisTemplate.opsForValue().set(redisKey, timeCapacity, 1, TimeUnit.MINUTES);
         }
 
-        System.out.printf("==userName==>"+subscription);
+        int maxCapacity = Integer.parseInt(timeCapacity);
+        if (maxCapacity <= 0) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Too many requests for user " + userName + ". Please try again later.");
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
+        }
 
-        return "Notification sent successfully.";
+        // Process the notification ...
+
+        if (redisTemplate.hasKey(redisKey) && redisTemplate.getExpire(redisKey) > 0) {
+            int newCapacity = maxCapacity - 1;
+            long expirationTime = redisTemplate.getExpire(redisKey);
+            redisTemplate.opsForValue().set(redisKey, String.valueOf(newCapacity), expirationTime, TimeUnit.SECONDS);
+        }
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Notification sent successfully");
+        return ResponseEntity.ok(response);
     }
 }
