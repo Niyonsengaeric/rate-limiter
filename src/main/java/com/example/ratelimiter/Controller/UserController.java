@@ -26,14 +26,14 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<?> addUser(@Valid @RequestBody User user) {
-        if (userService.existsByUserNameOrEmail(user.getUserName(), user.getEmail()))
+        if (userService.existsByUserNameOrEmail(user.getUserName(), user.getEmail())) {
             throw new NotFoundException("userName or email already used");
+        }
         return new ResponseEntity<>(userService.addUser(user), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(HttpServletRequest request) {
-        String userName = request.getAttribute("userName").toString();
         ObjectMapper oMapper = new ObjectMapper();
         Map<String, Object> tokens = oMapper.convertValue(request.getAttribute("data"), Map.class);
         Map<String, Object> data = new HashMap<>();
@@ -42,4 +42,5 @@ public class UserController {
         }
         return ResponseEntity.ok(data);
     }
+
 }
