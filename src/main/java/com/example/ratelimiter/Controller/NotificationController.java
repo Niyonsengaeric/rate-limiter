@@ -105,7 +105,7 @@ public class NotificationController {
         if (redisTemplate.hasKey(redisKey) && redisTemplate.getExpire(redisKey) > 0) {
             int newCapacity = maxCapacity - 1;
             long expirationTime = redisTemplate.getExpire(redisKey);
-            redisTemplate.opsForValue().set(redisKey, String.valueOf(newCapacity), expirationTime, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(redisKey, String.valueOf(newCapacity), expirationTime, TimeUnit.MINUTES);
         }
     }
 

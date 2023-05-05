@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,8 @@ import com.example.ratelimiter.Service.UserService;
 import com.example.ratelimiter.Service.UserSubscriptionService;
 import com.example.ratelimiter.filter.CustomAuthorizationFilter;
 
+import java.util.concurrent.TimeUnit;
+
 @RestController
 @RequestMapping("/api/v1")
 public class UserSubscriptionController {
@@ -29,6 +32,9 @@ public class UserSubscriptionController {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     @PostMapping("/subscribe")
     public ResponseEntity<?> subscribe(@Valid @RequestBody UserSubscription user, HttpServletRequest request) {
@@ -40,6 +46,8 @@ public class UserSubscriptionController {
             throw new NotFoundException("user not found");
         user.setUser(getUser);
         user.setCapacity(user.getCapacity());
+        String redisKey = "time-rate_limit:" + userName;
+        redisTemplate.opsForValue().set(redisKey, String.valueOf(user.getCapacity()), 1, TimeUnit.SECONDS);
         return new ResponseEntity<>(userSubscriptionService.addSubscription(user), HttpStatus.CREATED);
     }
 

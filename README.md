@@ -14,10 +14,10 @@ The design question is, how should they try to solve these three issues:
 
 ## Solution
 
-To solve the upper mentioned problems, we can implement an API rate limiter which is a technique that is used to control the rate of requests sent or received by a server API. It limits the amount of incoming or outgoing traffic, which can improve the performance of the API and make it more stable.
+To solve the upper mentioned problems, I will implement an API rate limiter which is a technique that is used to control the rate of requests sent or received by a server API. It limits the amount of incoming or outgoing traffic, which can improve the performance of the API and make it more stable.
 
 ## Technical Implementation
-The rate limiting should work for a distributed setup, as the APIs are accessible through a cluster of servers. We can use Redis as a distributed cache to store the rate limit counters, as it is a fast, in-memory data store that can be easily integrated with the Spring Boot application.
+The rate limiting should work for a distributed setup, as the APIs are accessible through a cluster of servers. I used Redis as a distributed cache to store the rate limit counters, as it is a fast, in-memory data store that can be easily integrated with the Spring Boot application.
 
 ## Architecture
 
@@ -31,23 +31,37 @@ To run the Spring Boot project locally, please follow the steps below:
 
 Make sure you have the following software installed on your machine:
 
-- Java Development Kit (JDK) 1.8 or higher
-- Docker (for running PostgreSQL and Redis servers)
-- PostgreSQL and Redis on your system and configure the connection details in the application.properties file.
+- [Java Development Kit (JDK) 1.8 or higher](https://adoptopenjdk.net/) - Download and install the appropriate JDK version for your operating system.
+
+- [PostgreSQL](https://www.postgresql.org/) - Install PostgreSQL on your system and configure the connection details in the application.properties file.
+
+- [Redis](https://redis.io/) - Install Redis on your system and configure the connection details in the application.properties file.
+
+- [Docker](https://www.docker.com/) - Install Docker to run the PostgreSQL and Redis servers.
+
+- [Maven](https://maven.apache.org/) - Install Maven on your system to execute the `mvn test` command.
 
 ### Setup
 
 1. Clone the repository:
 
-git clone https://github.com/Niyonsengaeric/rate-limiter.git
+`git clone https://github.com/Niyonsengaeric/rate-limiter.git`
 
+2. Start the PostgreSQL and Redis servers
 
-2. Build the project:
+`sudo service postgresql start`
 
-cd rate-limiter
-./gradlew build
+`redis-server`
 
-3. Configure the connection details in the application.properties file. Here is an example of how your application.properties file could look like:
+or start it using docker:
+
+- `docker run --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres`
+- `docker run --name my-redis -p 6379:6379 -d redis`
+ 
+
+3. create a postgres data base (e.g:rate_limiter)
+
+4. Configure the connection details in the application.properties file. Here is an example of how your application.properties file could look like:
 
 ```
 server.port=8080
@@ -66,14 +80,7 @@ default.monthly.capacity=100
 
 ```
 
-4. Start the PostgreSQL and Redis servers using Docker:
-
-docker-compose up -d
-
-
-5. Run the project:
-
-./gradlew bootRun
+5. Run the project
 
 The application will be accessible at http://localhost:8080.
 
@@ -88,19 +95,11 @@ The following APIs are implemented:
 - `/api/v1/subscribe` - GET request to get subscribed request per second
 - `/api/v1/notification` - POST request to trigger notification
 
-
-## Testing
-
-Testing is implemented using JUnit and Mockito. To run the tests, use the following command:
-
-
-The application will be accessible at http://localhost:8080.
-
 ## Testing
 
 - Use a REST client like Postman to test
 
-- Testing is implemented using JUnit and Mockito. To run the tests, use the following command: ./gradlew test
+- Testing is implemented using JUnit and Mockito. To run the tests, use the following command: `mvn test`
 
 
 ## Demo
@@ -109,7 +108,7 @@ A demo of the application is available at [live demo](https://rate-limiter-api-p
 
 ## Presentation Deck
 
-The presentation deck for the design is available at [goggle presentation](https://docs.google.com/presentation/d/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/edit#slide=id.gXXXXXXX).
+The presentation deck for the design is available at [google presentation](https://docs.google.com/presentation/d/1D2rb0oq9Ge8j3Zz2tHlYZO_SrDm6cOAbLU5PR_cMoO8).
 
 ## Communication
 
